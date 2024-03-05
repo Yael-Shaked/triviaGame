@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useContext, useEffect } from "react";
+import { observer } from "mobx-react-lite";
+import { StoreContext } from "../Models/StoreContex";
 import Header from "./Header";
 import GameScreen from "./GameScreen";
 import backgroundImage from "../assets/image/Untitle.png";
@@ -7,126 +8,73 @@ import StartScreen from "./StartScreen";
 import HelpPage from "./HelpPage";
 import FinalScoreScreen from "./FinalScoreScreen";
 
-export interface QuestionType {
-  id: string;
-  question: string;
-  answers: string[];
-  correctAnswer: string;
-}
-
-const TriviaGame: React.FC = () => {
-  const [questions, setquestions] = useState<QuestionType[]>([]);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [hasAnswered, setHasAnswered] = useState(false);
-  const [startGame, setStartGame] = useState(false);
-  const [showHelp, setShowHelp] = useState(false);
-  const [score, setScore] = useState(0);
-  const [showFinalScore, setShowFinalScore] = useState(false);
+const TriviaGame = observer(() => {
+  const store = useContext(StoreContext);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/questions")
-      .then((response) => {
-        setquestions(response.data);
-      })
-      .catch((error) => console.error("Error fetching questions:", error));
-    const savedScore = localStorage.getItem("score");
-    if (savedScore !== null) {
-      setScore(parseInt(savedScore, 10)); 
-    }
-  }, []);
+    store!.fetchQuestions();
+  }, [store]);
 
-  const handleStartGame = () => {
-    setStartGame(true);
-  };
-
-  const handleResetGame = () => {
-    setStartGame(false);
-    setCurrentQuestion(0);
-    setHasAnswered(false);
-    setScore(0);
-    setShowFinalScore(false);
-    localStorage.removeItem("score");
-  };
-
-  const handleBackToStartFromHelp = () => {
-    setShowHelp(false);
-  };
-  if (showHelp) {
-    return <HelpPage onBackToStart={handleBackToStartFromHelp} />;
+  if (store!.showHelp) {
+    return (
+      <HelpPage onBackToStart={() => store!.handleBackToStartFromHelp()} />
+    );
   }
 
-  const highScore = localStorage.getItem('highScore') || '0';
-  if (!startGame) {
+  if (!store!.startGame) {
     return (
       <StartScreen
-        onStartGame={handleStartGame}
-        help={() => setShowHelp(true)}
-        highScore={parseInt(highScore, 10)}
+        onStartGame={() => store!.handleStartGame()}
+        help={() => store!.toggleShowHelp()}
+        highScore={parseInt(localStorage.getItem("highScore") || "0", 10)}
       />
     );
   }
-  if (showFinalScore) {
-    return <FinalScoreScreen score={score} onBackToStart={handleResetGame} />;
+  if (store!.showFinalScore) {
+    return (
+      <FinalScoreScreen
+        score={store!.score}
+        onBackToStart={store!.handleResetGame}
+      />
+    );
   }
 
-  const handleAnswerSelect = (selectedAnswer: string) => {
-    const correctAnswer = questions[currentQuestion].correctAnswer;
-    let finalScoreUpdate = score;
-    if (selectedAnswer === correctAnswer) {
-      finalScoreUpdate = score + 1;
-      setScore(finalScoreUpdate);
-    }
-    setTimeout(() => {
-    if (currentQuestion < questions.length - 1) {
-
-       setHasAnswered(true);
-    
-      setCurrentQuestion(prevIndex => prevIndex + 1); 
-      setHasAnswered(false);
-   
-  } else {
-    const highScore = parseInt(localStorage.getItem("highScore") || "0", 10);
-    if (finalScoreUpdate > highScore) {
-      localStorage.setItem("highScore", finalScoreUpdate.toString()); 
-    }
-    setShowFinalScore(true); 
+  if (!store!.questions.length) {
+    return <div>Loading questions...</div>;
   }
-}, 1000);
-};
-
-  const isLastQuestion = currentQuestion === questions.length - 1;
-  if (questions.length === 0) return <div>Loading questions...</div>;
-  const question = questions[currentQuestion];
-  const gameDone = isLastQuestion && hasAnswered;
-  const background = { backgroundImage: `url(${backgroundImage})` };
-
+  const question = store!.questions[store!.currentQuestionIndex];
 
   return (
-    <div className="flex justify-center items-center bg-sky-100 min-h-screen">
-    <div className="relative w-custom h-screen rounded shadow-lg my-6" style={background}>
-    <div className="relative p-6">
-          <Header  onBackToStart={handleResetGame} 
-          currentQuestionIndex={currentQuestion}
-          totalQuestions={questions.length}
+    <div className="flex justify-center items-center bg-sky-100 min-h-screen ">
+      <div
+        className="relative w-custom rounded shadow-lg "
+        style={{
+          height: "calc(100vh - 1rem)",
+          backgroundImage: `url(${backgroundImage})`,
+        }}
+      >
+        <div className="absolute top-0 left-0 w-full h-full bg-white opacity-20"></div>
+
+        <div className="relative p-6">
+          <Header
+            onBackToStart={store!.handleResetGame}
+            currentQuestionIndex={store!.currentQuestionIndex}
+            totalQuestions={store!.questions.length}
           />
+
           <GameScreen
             questionText={question.question}
             answers={question.answers}
-            onSelectAnswer={handleAnswerSelect}
-            disabled={gameDone}
-            score={score}
+            onSelectAnswer={(selectedAnswer) =>
+              store!.handleAnswerSelect(selectedAnswer)
+            }
+            disabled={store!.gameDone}
+            score={store!.score}
           />
-          {gameDone && (
-            <div className="mt-4 text-3xl text-white text-center font-bold">
-              Game Over
-            </div>
-          )}
         </div>
       </div>
-      </div>
-
+    </div>
   );
-};
+});
 
 export default TriviaGame;

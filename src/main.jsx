@@ -1,10 +1,18 @@
 import React from "react";
-import ReactDOM from "react-dom/client";
-import App from "./App.tsx";
+import { createRoot } from "react-dom/client"; // Adjusted import
+import App from "./App";
+import { StoreContext } from "./Models/StoreContex";
+import { rootStore } from "./Models/RootStore";
 import "./index.css";
 
-ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-);
+const container = document.getElementById("root");
+if (container !== null) {
+  const root = createRoot(container); // Use createRoot
+  root.render(
+    <React.StrictMode>
+      <StoreContext.Provider value={rootStore}>
+        <App />
+      </StoreContext.Provider>
+    </React.StrictMode>,
+  );
+}
