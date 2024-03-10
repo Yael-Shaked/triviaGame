@@ -10,6 +10,7 @@ const HelpPage: React.FC<HelpPageProps> = ({ onBackToStart }) => {
   return (
     <div className="flex flex-col justify-center items-center bg-sky-100 min-h-screen">
       <div
+        data-testid="background-image-div"
         className="relative w-custom   rounded shadow-lg "
         style={{
           height: "calc(100vh - 1rem)",

@@ -17,6 +17,7 @@ const Header: React.FC<HeaderProps> = ({
       <div>
         {onBackToStart && (
           <button
+            aria-label="Back to Start"
             onClick={onBackToStart}
             className="rounded-full text-white  border border-gray-800 bg-white bg-opacity-25 rounded-3xl"
           >
