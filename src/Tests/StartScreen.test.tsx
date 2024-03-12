@@ -7,7 +7,7 @@ describe('StartScreen Component', () => {
   const mockOnStartGame = jest.fn();
   const mockHelp = jest.fn();
   const dynamicHighScore = Math.floor(Math.random() * 100); 
-  
+
   beforeEach(() => {
     mockOnStartGame.mockClear();
     mockHelp.mockClear();
@@ -15,18 +15,18 @@ describe('StartScreen Component', () => {
 
   });
 
-  it('renders the start and help buttons, and displays the high score dynamically', () => {
+  test('renders the start and help buttons, and displays the high score dynamically', () => {
     expect(screen.getByText('Start Playing')).toBeInTheDocument();
     expect(screen.getByText('Help Playing')).toBeInTheDocument();
     expect(screen.getByText(`High Score: ${dynamicHighScore}`)).toBeInTheDocument();
   });
 
-  it('calls onStartGame when the "Start Playing" button is clicked', () => {
+  test('calls onStartGame when the "Start Playing" button is clicked', () => {
     fireEvent.click(screen.getByText('Start Playing'));
     expect(mockOnStartGame).toHaveBeenCalled();
   });
 
-  it('calls help when the "Help Playing" button is clicked', () => {
+  test('calls help when the "Help Playing" button is clicked', () => {
     fireEvent.click(screen.getByText('Help Playing'));
     expect(mockHelp).toHaveBeenCalled();
   });

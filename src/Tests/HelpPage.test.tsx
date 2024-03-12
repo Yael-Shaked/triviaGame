@@ -4,10 +4,9 @@ import "@testing-library/jest-dom";
 import HelpPage from "../components/HelpPage";
 
 describe("HelpPage Component", () => {
-  let mockBackToStart: jest.Mock<any, any, any>;
-  
+ const mockBackToStart = jest.fn();
+
   beforeEach(() => {
-    mockBackToStart = jest.fn();
     render(<HelpPage onBackToStart={mockBackToStart} />);
   });
 
